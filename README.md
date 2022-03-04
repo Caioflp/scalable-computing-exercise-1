@@ -1,2 +1,2 @@
-# scalable-computing-exercise-1
+# Exercise 1
 First exercise proposed in the course "Scalable Computing" at FGV - EMAp.
