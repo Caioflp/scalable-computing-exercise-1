@@ -199,7 +199,7 @@ void countHateLoveIn(string text, int threadInx){
 /**
  * Executes the search
  */
-void execute() {
+double execute() {
 
     // Measure elapsed time
     auto startTime = std::chrono::steady_clock::now();
@@ -217,27 +217,51 @@ void execute() {
     }
 
     // Compute elapsed time
-    printf("The execution step took %f milliseconds.\n", diffTime(startTime));
+    double timeTaken = diffTime(startTime);
+    printf("The execution step took %f milliseconds.\n", timeTaken);
     std::cout << std::flush;
+
+    return timeTaken;
 }
 
+/** Function to help parse user input when executing the script
+ * It converts char to int
+ */
+int stringToInt(char* text){
+    std::stringstream ss;
+    ss << text;
+    int number;
+    ss >> number;
+    return number;
+}
 
 /**
  * Process the shakespeare book collection and count occurrences of the words love and hate.
  */
-int main() {
+int main(int argc, char* argv[]) {
 
     // Measure elapsed time
     auto startTime = std::chrono::steady_clock::now();
+
+    // Create two variables to store execution and total time
+    double executionTime, totalTime;
+
+    // Read user input
+    NUM_THREADS = stringToInt(argv[1]);
+
+    // Resize global arrays
+    loveCount.resize(NUM_THREADS);
+    hateCount.resize(NUM_THREADS);
 
     // Load the data
     loadData(NUM_THREADS);
 
     // Execute the search
-    execute();
+    executionTime = execute();
 
     // Compute elapsed time
-    printf("The total time was %f milliseconds.\n", diffTime(startTime));
+    totalTime = diffTime(startTime);
+    printf("The total time was %f milliseconds.\n", totalTime);
     std::cout << std::flush;
 
     // Count total
@@ -251,6 +275,12 @@ int main() {
         hateTotal += numHates;
     }
     printf("Found a total of %i love words and %i hate words.\n", loveTotal, hateTotal);
+
+    // Save results in time.txt
+    ofstream file;
+    file.open("time.txt", fstream::app);
+    file << NUM_THREADS << " " << executionTime << " " << totalTime << "\n";
+    file.close();
 
     return EXIT_SUCCESS;
 }
