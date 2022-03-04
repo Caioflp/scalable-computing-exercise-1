@@ -138,33 +138,61 @@ void countHateLoveIn(string text, int threadInx){
     const std::string loveWord = "love";
     const std::string hateWord = "hate";
 
-    // Indexes used to count each word
-    int loveIndex = 0;
+    // // Indexes used to count each word
+    // int loveIndex = 0;
     // int hateIndex = 0;
 
     int currentPos = 0;
 
-    while (currentPos < endPos){
-        if (text[currentPos] == loveWord[loveIndex]){
-            loveIndex++;
-            if (didWordEnd(text[currentPos+1]) && loveIndex == 3){
-                loveCount[threadInx]++;
-                loveIndex = 0;
+    while (currentPos < endPos) {
+
+        if (text[currentPos] == loveWord[0]) {
+            int loveIndex = 0;
+            while(currentPos < endPos && text[currentPos] == loveWord[loveIndex]) {
+                loveIndex++;
+                currentPos++;
+                if (didWordEnd(text[currentPos]) && loveIndex > 3) {
+                    loveCount[threadInx]++;
+                    break;
+                }
             }
+        } else if (text[currentPos] == hateWord[0]) {
+            int hateIndex = 0;
+            while(currentPos < endPos && text[currentPos] == hateWord[hateIndex]) {
+                hateIndex++;
+                currentPos++;
+                if (didWordEnd(text[currentPos]) && hateIndex > 3) {
+                    hateCount[threadInx]++;
+                    break;
+                }
+            }
+        } else {
+            currentPos++;
         }
-        // if (lettersMatch(currentPos, loveIndex, loveWord)){
-        //     loveIndex++;
-        //     if (didWordEnd(currentPos) && loveIndex == 3){
-        //         loveCount[threadId]++;
-        //         loveIndex = 0;
-        //     }
-        // }
-        else {
-            loveIndex = 0;
-        }
-        currentPos++;
     }
-    printf("[%s] Found %i love words.\n", threadId.c_str(), loveCount[threadInx]);
+
+    // while (currentPos < endPos){
+    //     if (text[currentPos] == loveWord[loveIndex]){
+    //         loveIndex++;
+    //         if (didWordEnd(text[currentPos+1]) && loveIndex == 3){
+    //             loveCount[threadInx]++;
+    //             loveIndex = 0;
+    //         }
+    //     }
+    //     // if (lettersMatch(currentPos, loveIndex, loveWord)){
+    //     //     loveIndex++;
+    //     //     if (didWordEnd(currentPos) && loveIndex == 3){
+    //     //         loveCount[threadId]++;
+    //     //         loveIndex = 0;
+    //     //     }
+    //     // }
+    //     else {
+    //         loveIndex = 0;
+    //     }
+    //     currentPos++;
+    // }
+
+    printf("[%s] Found %i love words and %i hate words.\n", threadId.c_str(), loveCount[threadInx], hateCount[threadInx]);
     std::cout << std::flush;
 }
 
@@ -217,7 +245,12 @@ int main() {
     for (int numLoves : loveCount) {
         loveTotal += numLoves;
     }
-    printf("Found a total of %i love words.\n", loveTotal);
+
+    int hateTotal = 0;
+    for (int numHates : hateCount) {
+        hateTotal += numHates;
+    }
+    printf("Found a total of %i love words and %i hate words.\n", loveTotal, hateTotal);
 
     return EXIT_SUCCESS;
 }
