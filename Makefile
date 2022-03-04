@@ -1,4 +1,4 @@
-CFLAGS = -O3 -g -Wall
+CFLAGS = -O3 -g -Wall -pthread
 TARGET = main_base
 
 all: $(TARGET)

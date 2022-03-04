@@ -4,6 +4,7 @@
 #include <sstream>
 #include <sys/wait.h>
 #include <thread>
+#include <unistd.h>
 #include <vector>
 
 
@@ -13,13 +14,29 @@ using namespace std;
 /**
  * Number of threads
  */
-int NUM_THREADS = 50;
+int NUM_THREADS = 5;
 
+
+/**
+ * All letters of the alphabet
+ */
+std::string ALPHABET_LETTERS = "abcdefghijklmnopqrstuvwxyz";
 
 /**
  * Data blocks
  */
 vector<string> dataBlocks;
+
+
+/**
+ * Love count array
+ */
+vector<int> loveCount(NUM_THREADS, 0);
+
+/**
+ * Hate count array
+ */
+vector<int> hateCount(NUM_THREADS, 0);
 
 
 /**
@@ -96,6 +113,60 @@ void loadData(int numBlocks) {
     std::cout << std::flush;
 }
 
+bool didWordEnd(char nextLetter){
+    // Next char should not be a letter
+    for (char l : ALPHABET_LETTERS){
+        if (nextLetter == l){
+            return false;
+        }
+    }
+    return true;
+}
+
+/** Function to be passed to each thread
+ * For now, it only counts love words
+ */
+void countHateLoveIn(string text, int threadInx){
+    
+    // Retrieve thread ID for loging purposes
+    std::ostringstream threadIdStream;
+    threadIdStream << std::this_thread::get_id();
+    std::string threadId = threadIdStream.str();
+
+    int endPos = text.size();
+
+    const std::string loveWord = "love";
+    const std::string hateWord = "hate";
+
+    // Indexes used to count each word
+    int loveIndex = 0;
+    // int hateIndex = 0;
+
+    int currentPos = 0;
+
+    while (currentPos < endPos){
+        if (text[currentPos] == loveWord[loveIndex]){
+            loveIndex++;
+            if (didWordEnd(text[currentPos+1]) && loveIndex == 3){
+                loveCount[threadInx]++;
+                loveIndex = 0;
+            }
+        }
+        // if (lettersMatch(currentPos, loveIndex, loveWord)){
+        //     loveIndex++;
+        //     if (didWordEnd(currentPos) && loveIndex == 3){
+        //         loveCount[threadId]++;
+        //         loveIndex = 0;
+        //     }
+        // }
+        else {
+            loveIndex = 0;
+        }
+        currentPos++;
+    }
+    printf("[%s] Found %i love words.\n", threadId.c_str(), loveCount[threadInx]);
+    std::cout << std::flush;
+}
 
 /**
  * Executes the search
@@ -107,7 +178,15 @@ void execute() {
 
     printf("Starting the execution with %d threads\n", NUM_THREADS);
 
-    // <YOUR CODE>
+    vector<thread*> threadList;
+    for (int threadInx=0; threadInx < NUM_THREADS; threadInx++) {
+        threadList.push_back(new thread(countHateLoveIn, dataBlocks[threadInx], threadInx));
+    }
+
+    for (thread * thread : threadList) {
+        thread->join();
+        delete thread;
+    }
 
     // Compute elapsed time
     printf("The execution step took %f milliseconds.\n", diffTime(startTime));
@@ -121,17 +200,24 @@ void execute() {
 int main() {
 
     // Measure elapsed time
-    // auto startTime = std::chrono::steady_clock::now();
+    auto startTime = std::chrono::steady_clock::now();
 
     // Load the data
     loadData(NUM_THREADS);
 
     // Execute the search
-    // execute();
+    execute();
 
     // Compute elapsed time
-    // printf("The total time was %f milliseconds.\n", diffTime(startTime));
-    // std::cout << std::flush;
+    printf("The total time was %f milliseconds.\n", diffTime(startTime));
+    std::cout << std::flush;
+
+    // Count total
+    int loveTotal = 0;
+    for (int numLoves : loveCount) {
+        loveTotal += numLoves;
+    }
+    printf("Found a total of %i love words.\n", loveTotal);
 
     return EXIT_SUCCESS;
 }
