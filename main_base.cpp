@@ -113,7 +113,10 @@ void loadData(int numBlocks) {
     std::cout << std::flush;
 }
 
-bool didWordEnd(char nextLetter){
+/** Function to be used in the finding of words
+ * Returns true for non alphabet characters
+ */
+bool notAlphabetLetter(char nextLetter){
     // Next char should not be a letter
     for (char l : ALPHABET_LETTERS){
         if (nextLetter == l){
@@ -138,10 +141,6 @@ void countHateLoveIn(string text, int threadInx){
     const std::string loveWord = "love";
     const std::string hateWord = "hate";
 
-    // // Indexes used to count each word
-    // int loveIndex = 0;
-    // int hateIndex = 0;
-
     int currentPos = 0;
 
     while (currentPos < endPos) {
@@ -151,7 +150,7 @@ void countHateLoveIn(string text, int threadInx){
             while(currentPos < endPos && text[currentPos] == loveWord[loveIndex]) {
                 loveIndex++;
                 currentPos++;
-                if (didWordEnd(text[currentPos]) && loveIndex > 3) {
+                if (notAlphabetLetter(text[currentPos]) && notAlphabetLetter(text[currentPos-5]) && loveIndex > 3) {
                     loveCount[threadInx]++;
                     break;
                 }
@@ -161,7 +160,7 @@ void countHateLoveIn(string text, int threadInx){
             while(currentPos < endPos && text[currentPos] == hateWord[hateIndex]) {
                 hateIndex++;
                 currentPos++;
-                if (didWordEnd(text[currentPos]) && hateIndex > 3) {
+                if (notAlphabetLetter(text[currentPos]) && notAlphabetLetter(text[currentPos-5]) && hateIndex > 3) {
                     hateCount[threadInx]++;
                     break;
                 }
@@ -170,27 +169,6 @@ void countHateLoveIn(string text, int threadInx){
             currentPos++;
         }
     }
-
-    // while (currentPos < endPos){
-    //     if (text[currentPos] == loveWord[loveIndex]){
-    //         loveIndex++;
-    //         if (didWordEnd(text[currentPos+1]) && loveIndex == 3){
-    //             loveCount[threadInx]++;
-    //             loveIndex = 0;
-    //         }
-    //     }
-    //     // if (lettersMatch(currentPos, loveIndex, loveWord)){
-    //     //     loveIndex++;
-    //     //     if (didWordEnd(currentPos) && loveIndex == 3){
-    //     //         loveCount[threadId]++;
-    //     //         loveIndex = 0;
-    //     //     }
-    //     // }
-    //     else {
-    //         loveIndex = 0;
-    //     }
-    //     currentPos++;
-    // }
 
     printf("[%s] Found %i love words and %i hate words.\n", threadId.c_str(), loveCount[threadInx], hateCount[threadInx]);
     std::cout << std::flush;
@@ -227,7 +205,7 @@ double execute() {
 /** Function to help parse user input when executing the script
  * It converts char to int
  */
-int stringToInt(char* text){
+int charToInt(char* text){
     std::stringstream ss;
     ss << text;
     int number;
@@ -239,6 +217,7 @@ int stringToInt(char* text){
  * Process the shakespeare book collection and count occurrences of the words love and hate.
  */
 int main(int argc, char* argv[]) {
+    printf("--BEGIN--\n"); 
 
     // Measure elapsed time
     auto startTime = std::chrono::steady_clock::now();
@@ -247,7 +226,9 @@ int main(int argc, char* argv[]) {
     double executionTime, totalTime;
 
     // Read user input
-    NUM_THREADS = stringToInt(argv[1]);
+    NUM_THREADS = charToInt(argv[1]);
+
+    printf("This iteration has been started with %i threads to be used\n", NUM_THREADS); 
 
     // Resize global arrays
     loveCount.resize(NUM_THREADS);
@@ -261,7 +242,7 @@ int main(int argc, char* argv[]) {
 
     // Compute elapsed time
     totalTime = diffTime(startTime);
-    printf("The total time was %f milliseconds.\n", totalTime);
+    printf("The total time was %f milliseconds\n", totalTime);
     std::cout << std::flush;
 
     // Count total
@@ -274,13 +255,27 @@ int main(int argc, char* argv[]) {
     for (int numHates : hateCount) {
         hateTotal += numHates;
     }
-    printf("Found a total of %i love words and %i hate words.\n", loveTotal, hateTotal);
+    printf("Found a total of %i love words and %i hate words\n", loveTotal, hateTotal);
+
+    // Print which one has more occurences
+    if (loveTotal>hateTotal){
+        printf("The total amount of occurences of the word 'love' alone is higher than the word 'hate'\n");
+    }else if(loveTotal==hateTotal){
+        printf("The total amount of occurences of the word 'love' alone is the same as the word 'hate'\n");
+    }else{
+        printf("The total amount of occurences of the word 'love' alone is lower than the word 'hate'\n");
+    }
 
     // Save results in time.txt
     ofstream file;
     file.open("time.txt", fstream::app);
     file << NUM_THREADS << " " << executionTime << " " << totalTime << "\n";
     file.close();
+
+    // Logging purposes for number of threads
+    printf("This iteration of the code with %i threads is finished\n", NUM_THREADS);
+    printf("--END--\n"); 
+    std::cout << std::flush;
 
     return EXIT_SUCCESS;
 }
