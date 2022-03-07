@@ -61,10 +61,10 @@ void loadData(int numBlocks) {
     auto startTime = std::chrono::steady_clock::now();
 
     // Open the input file and get the fileSize data
-    ifstream file("./data/shakespeare.txt", ios::ate);
+    ifstream file("./data/shakespeare300.txt", ios::ate);
     streamsize fileSize = file.tellg();
     if (fileSize == -1) {
-        perror("Failed open the file\n");
+        perror("Failed to open the file. Maybe you forgot to generate shakespeare300.txt from the fetch_data.py script?\n");
         exit(EXIT_FAILURE);
     }
 
